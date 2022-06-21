@@ -42,7 +42,7 @@ ERCC_VER="1.0"
 # Prepare
 #------------
 
-TEST_NET_SCRIPT_PATH=${FPC_PATH}/samples/samples/demos/cbdc/network
+TEST_NET_SCRIPT_PATH=${FPC_PATH}/samples/demos/cbdc/network
 SAMPLES_PATH=${TEST_NET_SCRIPT_PATH}/fabric-samples
 NETWORK_PATH=${SAMPLES_PATH}/test-network
 export FABRIC_CFG_PATH=${SAMPLES_PATH}/config

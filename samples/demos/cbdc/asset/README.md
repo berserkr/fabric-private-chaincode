@@ -270,3 +270,10 @@ export GATEWAY_CONFIG=$FPC_PATH/samples/demos/cbdc/network/fabric-samples/test-n
 ```
 
 Congratulations! You have successfully created a FPC chaincode with go and invoked it using our simple cli.
+
+## Destroying the network
+
+```bash
+cd $FPC_PATH/samples/demos/cbdc/network/fabric-samples/test-network
+./network.sh down
+```
