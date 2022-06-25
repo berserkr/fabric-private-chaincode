@@ -1,4 +1,4 @@
-package attestation_utils
+package chaincode
 
 import (
 	"fmt"
@@ -10,8 +10,11 @@ func add (a int, b int) int {
     return a + b
 }
 */
-func verifyAttestation(attestation string) bool, string {
-	return nil, nil;
+func verifyAttestation(attestation string) (string, error) {
+
+	fmt.Println("> verify " + attestation)
+
+	return "OK", nil;
 }
 
 

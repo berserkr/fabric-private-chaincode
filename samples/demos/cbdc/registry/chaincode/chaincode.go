@@ -5,8 +5,6 @@ import (
 
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	pb "github.com/hyperledger/fabric-protos-go/peer"
-
-	"github.com/hyperledger/fabric-private-chaincode/samples/demos/cbdc/registry/chaincode/attestation_utils"
 )
 
 type AttestationRegistry struct {
@@ -36,8 +34,8 @@ func storeAttestation(stub shim.ChaincodeStubInterface) pb.Response {
 
 	attestationHash, value := args[0], args[1]
 
-	if err, msg := attestation_utils.verifyAttestation(value); err != nil {
-		return shim.Error("failed to verify attestation")
+	if msg, err := verifyAttestation(value); err != nil {
+		return shim.Error(msg)
 	}
 
 	if err := stub.PutState(attestationHash, []byte(value)); err != nil {
