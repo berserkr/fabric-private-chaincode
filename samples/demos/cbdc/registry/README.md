@@ -1,11 +1,11 @@
-# FPC Go Simple Asset Tutorial
+# FPC Go Simple Registry Tutorial
 
 *Note - Go Chaincode support is currently under development and should be considered experimental.*
 
 This tutorial shows how to create, build, install and test a Go Chaincode using the Fabric Private Chaincode (FPC) framework.
 Here we focus on the development of FPC Chaincode in Go. There exists a companion [hello world tutorial](../helloworld) illustrating the use of FPC with C++ chaincode.
 
-This tutorial illustrates a simple use case where a FPC chaincode is used to store assets on the ledger and then retrieve the latest value. 
+This tutorial illustrates a simple use case where a FPC chaincode is used to store registrys on the ledger and then retrieve the latest value. 
 Here are the steps to accomplish this:
 
 * Write your Go Chaincode using the FPC Go Library
@@ -17,7 +17,7 @@ Here are the steps to accomplish this:
 ## Prerequisites
 This tutorial presumes that you have installed FPC on your `$GOPATH` as described in the FPC [README.md](../../../../README.md#clone-fabric-private-chaincode) and `$FPC_PATH` is set accordingly.
 
-*Note that this preview code currently resides in the `go-chaincode-preview` branch, thus, you need to switch branch (i.e., `git checkout -b "go-chaincode-preview"`).*
+*Note that this preview code currently resides in the `go-support-preview` branch, thus, you need to switch branch (i.e., `git checkout -b "go-support-preview"`).*
 
 We also need a working FPC development environment. As described in the "Setup your Development Environment" Section of the FPC [README.md](../../../../README.md#setup-your-development-environment), you can use our docker-based dev environment (Option 1) or setup your local development environment (Option 2).
 We recommend using the docker-based development environment and continue this tutorial within the dev container terminal.
@@ -29,9 +29,9 @@ We also assume that you are familiar with Fabric chaincode development in go.
 Most of the steps in this tutorial follow the normal Fabric chaincode development process, however, there are a few differences that we will highlight here.
 
 ## Writing Go Chaincode
-Go to `$FPC_PATH/samples/demos/cbdc/asset` and create the project structure.
+Go to `$FPC_PATH/samples/demos/cbdc/registry` and create the project structure.
 ```bash
-cd $FPC_PATH/samples/demos/cbdc/asset
+cd $FPC_PATH/samples/demos/cbdc/registry
 mkdir chaincode
 touch chaincode/chaincode.go
 touch main.go
@@ -51,50 +51,50 @@ import (
 	pb "github.com/hyperledger/fabric-protos-go/peer"
 )
 
-type SimpleAsset struct {
+type AttestationRegistry struct {
 }
 
-func (t *SimpleAsset) Init(stub shim.ChaincodeStubInterface) pb.Response {
+func (t *AttestationRegistry) Init(stub shim.ChaincodeStubInterface) pb.Response {
 	return shim.Success(nil)
 }
 
-func (t *SimpleAsset) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
+func (t *AttestationRegistry) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	switch f, _ := stub.GetFunctionAndParameters(); f {
 	case "store":
-		return storeAsset(stub)
+		return storeAttestation(stub)
 	case "retrieve":
-		return retrieveAsset(stub)
+		return retrieveAttestation(stub)
 	}
 
 	return shim.Error("unknown function")
 }
 
-func storeAsset(stub shim.ChaincodeStubInterface) pb.Response {
+func storeAttestation(stub shim.ChaincodeStubInterface) pb.Response {
 	_, args := stub.GetFunctionAndParameters()
 
 	if len(args) < 2 {
 		return shim.Error("not enough arguments")
 	}
 
-	assetName, value := args[0], args[1]
+	attestationHash, value := args[0], args[1]
 
-	if err := stub.PutState(assetName, []byte(value)); err != nil {
+	if err := stub.PutState(attestationHash, []byte(value)); err != nil {
 		return shim.Error("something went wrong")
 	}
 
 	return shim.Success([]byte("OK"))
 }
 
-func retrieveAsset(stub shim.ChaincodeStubInterface) pb.Response {
+func retrieveAttestation(stub shim.ChaincodeStubInterface) pb.Response {
 	_, args := stub.GetFunctionAndParameters()
 
 	if len(args) < 1 {
 		return shim.Error("not enough arguments")
 	}
 
-	assetName := args[0]
+	attestationHash := args[0]
 
-	value, err := stub.GetState(assetName)
+	value, err := stub.GetState(attestationHash)
 	if err != nil {
 		return shim.Error("something went wrong")
 	}
@@ -103,23 +103,23 @@ func retrieveAsset(stub shim.ChaincodeStubInterface) pb.Response {
 		shim.Success([]byte("NOT FOUND"))
 	}
 
-	return shim.Success([]byte(fmt.Sprintf("%s:%s", assetName, value)))
+	return shim.Success([]byte(fmt.Sprintf("%s:%s", attestationHash, value)))
 }
 ```
 
 You can see that this code implements the `Init` and `Invoke` methods of a chaincode. 
-The chaincode supports two types of transactions: `store` and `retrieve`, which are implemented by `storeAsset` and `retrieveAsset` methods respectively.
+The chaincode supports two types of transactions: `store` and `retrieve`, which are implemented by `storeAttestation` and `retrieveAttestation` methods respectively.
 
-Let's first focus on the `store` transaction, which simply saves the value of an asset, implemented by the `storeAsset` method.
-We extract the `assetName` and the `value` from chaincode invocation parameters and use the `PutState` function to store them.
-Similarly, let us add the logic for the `retrieve` transaction, which reads the value of an asset by calling `GetState` and returns it.
+Let's first focus on the `store` transaction, which simply saves the value of an registry, implemented by the `storeAttestation` method.
+We extract the `attestationHash` and the `value` from chaincode invocation parameters and use the `PutState` function to store them.
+Similarly, let us add the logic for the `retrieve` transaction, which reads the value of an registry by calling `GetState` and returns it.
 
 So far the code presented here is not different from traditional Go Chaincode. All the FPC specific protect mechanisms
 are handled by the FPC framework transparently.
 
 To complete the code, we need to add some logic to instantiate our private chaincode and start it.
-To do so, we use `fpc.NewPrivateChaincode(&chaincode.SimpleAsset{})`.
-Add the following code to `$FPC_PATH/samples/demos/cbdc/asset/main.go`:
+To do so, we use `fpc.NewPrivateChaincode(&chaincode.AttestationRegistry{})`.
+Add the following code to `$FPC_PATH/samples/demos/cbdc/registry/main.go`:
 ```go
 package main
 
@@ -128,7 +128,7 @@ import (
 
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	fpc "github.com/hyperledger/fabric-private-chaincode/ecc_go/chaincode"
-	"github.com/hyperledger/fabric-private-chaincode/samples/demos/cbdc/asset/chaincode"
+	"github.com/hyperledger/fabric-private-chaincode/samples/demos/cbdc/registry/chaincode"
 )
 
 func main() {
@@ -136,7 +136,7 @@ func main() {
 	addr := os.Getenv("CHAINCODE_SERVER_ADDRESS")
 
 	// create private chaincode
-	privateChaincode := fpc.NewPrivateChaincode(&chaincode.SimpleAsset{})
+	privateChaincode := fpc.NewPrivateChaincode(&chaincode.AttestationRegistry{})
 
 	// start chaincode as a service
 	server := &shim.ChaincodeServer{
@@ -156,24 +156,24 @@ func main() {
 
 ## Building FPC Go Chaincode 
 
-Create a `Makefile` (i.e., `touch $FPC_PATH/samples/demos/cbdc/asset/Makefile`) with the following content: 
+Create a `Makefile` (i.e., `touch $FPC_PATH/samples/demos/cbdc/registry/Makefile`) with the following content: 
 ```Makefile
 TOP = ../../../..
 include $(TOP)/ecc_go/build.mk
 
-CC_NAME ?= asset
+CC_NAME ?= registry
 ```
 
 Please make sure that in the file above the variable `TOP` points to the FPC root directory (i.e., `$FPC_PATH`).
 
-In `$FPC_PATH/samples/demos/cbdc/asset` directory, to build the chaincode and package it as docker image, execute:
+In `$FPC_PATH/samples/demos/cbdc/registry` directory, to build the chaincode and package it as docker image, execute:
 ```bash
 make
 ```
 
-After building, you can check that the `fpc/fpc-asset` image exists in your local docker registry using:
+After building, you can check that the `fpc/fpc-registry` image exists in your local docker registry using:
 ```bash
-docker images | grep asset
+docker images | grep registry
 ```
 
 
@@ -215,13 +215,13 @@ cd $FPC_PATH/samples/demos/cbdc/network/fabric-samples/test-network
 ./network.sh createChannel -c mychannel
 ```
 
-Once the network is up and running, we install the simple asset chaincode and the FPC Enclave Registry.
+Once the network is up and running, we install the simple registry chaincode and the FPC Enclave Registry.
 We provide a small shell script to make this task a bit easier.
 
 ```bash
-export CC_ID=asset
-export CC_PATH="$FPC_PATH/samples/demos/cbdc/asset/"
-export CC_VER=$(cat "$FPC_PATH/samples/demos/cbdc/asset/mrenclave")
+export CC_ID=registry
+export CC_PATH="$FPC_PATH/samples/demos/cbdc/registry/"
+export CC_VER=$(cat "$FPC_PATH/samples/demos/cbdc/registry/mrenclave")
 cd $FPC_PATH/samples/demos/cbdc/network
 ./installFPC.sh
 ```
@@ -233,9 +233,9 @@ Continue by running:
 make ercc-ecc-start
 ```
 
-You should see now four containers running (i.e., `asset.peer0.org1`, `asset.peer0.org2`, `ercc.peer0.org1`, and `ercc.peer0.org2`). 
+You should see now four containers running (i.e., `registry.peer0.org1`, `registry.peer0.org2`, `ercc.peer0.org1`, and `ercc.peer0.org2`). 
 
-### Invoke simple asset
+### Invoke simple registry
 
 ```bash
 # prepare connections profile
@@ -247,7 +247,7 @@ cd $FPC_PATH/samples/demos/cbdc/cli
 make
 
 # export fpcclient settings
-export CC_NAME=asset
+export CC_NAME=registry
 export CHANNEL_NAME=mychannel
 export CORE_PEER_ADDRESS=localhost:7051
 export CORE_PEER_ID=peer0.org1.example.com

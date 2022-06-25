@@ -5,7 +5,7 @@ import (
 
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	fpc "github.com/hyperledger/fabric-private-chaincode/ecc_go/chaincode"
-	"github.com/hyperledger/fabric-private-chaincode/samples/demos/cbdc/asset/chaincode"
+	"github.com/hyperledger/fabric-private-chaincode/samples/demos/cbdc/registry/chaincode"
 )
 
 func main() {
@@ -13,7 +13,7 @@ func main() {
 	addr := os.Getenv("CHAINCODE_SERVER_ADDRESS")
 
 	// create private chaincode
-	privateChaincode := fpc.NewPrivateChaincode(&chaincode.SimpleAsset{})
+	privateChaincode := fpc.NewPrivateChaincode(&chaincode.AttestationRegistry{})
 
 	// start chaincode as a service
 	server := &shim.ChaincodeServer{

@@ -1,4 +1,4 @@
 TOP = ../../../..
 include $(TOP)/ecc_go/build.mk
 
-CC_NAME ?= asset
+CC_NAME ?= registry
