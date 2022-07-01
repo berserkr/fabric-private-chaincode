@@ -277,3 +277,5 @@ Congratulations! You have successfully created a FPC chaincode with go and invok
 cd $FPC_PATH/samples/demos/cbdc/network/fabric-samples/test-network
 ./network.sh down
 ```
+
+*Note* May have to remove dangling docker images, and then do network down again.
