@@ -112,7 +112,7 @@ endif
 # These variables will be necessary after the tests to report the coverage "from inside the container".
 ifeq (${IS_CI_RUNNING}, true)
 ifeq (${CODE_COVERAGE_ENABLED}, true)
-DOCKER_DEV_RUN_OPTS += `curl -s https://codecov.io/env | bash`
+DOCKER_DEV_RUN_OPTS += "" 
 endif
 endif
 
